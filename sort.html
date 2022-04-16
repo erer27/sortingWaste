@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>인공지능 분리수거</title>
+  <meta charset="utf-8">
+  <style>
+    .wastebasket {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      z-index: 1;
+      text-align: center;
+      border-style: dashed
+    }
+
+    ;
+  </style>
+
+
+</head>
+
+<body>
+  <input type="file" id="invisible" onchange="previewFile()"
+    style="position:relative; top: 620px; visibility: hidden;"><br>
+  <button id="visible" onclick="onClickUpload(); init()" style="position:relative; top: 620px;">재활용 올리기</button>
+
+  <img src="default2.png" class="waste" height="120" width="120" id="waste"
+    style="position:absolute; top: 20px; left: 500px; z-index: 2; ">
+  <button type="button" onclick="sort()" style="position:relative; top: 620px;">분리수거</button>
+
+
+  <div id="basket1" class="wastebasket" style="background:rgba(233, 5, 5, 0.7); top: 400px; left: 20px; ">플라스틱</div>
+  <div id="basket2" class="wastebasket" style="background:rgba(243, 243, 4, 0.7); top: 400px; left: 240px; ">비닐</div>
+  <div id="basket3" class="wastebasket" style="background: rgb(21, 183, 21, 0.7); top: 400px; left: 460px; ">유리</div>
+  <div id="basket4" class="wastebasket" style="background: rgba(4, 4, 224, 0.7); top: 400px; left: 680px; ">캔</div>
+  <div id="basket5" class="wastebasket" style="background: rgba(222, 3, 222, 0.7); top: 400px; left: 900px; ">종이</div>
+
+  <!--<div>Teachable Machine Image Model</div>
+<button type="button" onclick="init()">Start</button>
+<div id="webcam-container"></div>-->
+  <div id="label-container" style="position: absolute; top: 140px; left: 500px"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.3/gsap.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/1.16.1/TweenMax.min.js'></script>
+  
+
+
+
+  <script type="text/javascript">
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "./my_model/";
+
+    let model, webcam, labelContainer, maxPredictions;
+    var maxVar = 0;
+
+    // Load the image model and setup the webcam
+    async function init() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+
+      // load the model and metadata
+      // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+      // or files from your local hard drive
+      // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+      model = await tmImage.load(modelURL, metadataURL);
+      maxPredictions = model.getTotalClasses();
+
+
+
+
+      labelContainer = document.getElementById("label-container");
+      for (let i = 0; i < maxPredictions; i++) { // and class labels
+        labelContainer.appendChild(document.createElement("div"));
+      }
+
+
+    }
+
+
+
+    // run the webcam image through the image model
+    async function predict() {
+      // predict can take in an image, video or canvas html element
+      var waste = document.getElementById('waste');
+      const prediction = await model.predict(waste, false);
+
+      for (let i = 0; i < maxPredictions; i++) {
+        const classPrediction =
+          prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+        labelContainer.childNodes[i].innerHTML = classPrediction;
+      }
+
+      for (let i = 0; i < maxPredictions; i++) {//확률 최댓값 구하기
+        if (prediction[maxVar].probability.toFixed(2) < prediction[i].probability.toFixed(2)) {
+          maxVar = i;
+        }
+      }
+
+    }
+  </script>
+
+
+
+
+  <script>
+    function previewFile() {//파일 업로드하기
+      const preview = document.querySelector('img');
+      const file = document.querySelector('input[type=file]').files[0];
+      const reader = new FileReader();
+
+      reader.addEventListener("load", function () {
+        preview.src = reader.result;
+      }, false);
+      reader.onload = () => {//업로드한 파일 미리보기하고 위치 업데이트하고 predict하기
+        var waste = document.getElementById('waste');
+        waste.style.left = "500px";
+        waste.style.top = "20px";
+        predict();
+
+      }
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }
+    function sort() {//분리수거 버튼 누르면 이미지 옮기기
+      var basket1 = document.getElementById('basket1');
+      var basket2 = document.getElementById('basket2');
+      var basket3 = document.getElementById('basket3');
+      var basket4 = document.getElementById('basket4');
+      var basket5 = document.getElementById('basket5');
+
+      switch (maxVar) {//최댓값의 경우에 따라서
+        case 0:
+          gsap.to(".waste",//gsap 이동 애니메이션
+            { left: parseInt(basket1.style.left, 10) + 40 + "px", top: parseInt(basket1.style.top, 10) + 40 + "px", duration: 0.5 });
+
+          setTimeout(()=>shake(basket1), 400);
+
+
+          break;
+        case 1:
+          gsap.to(".waste",
+            { left: parseInt(basket2.style.left, 10) + 40 + "px", top: parseInt(basket2.style.top, 10) + 40 + "px", duration: 1 });
+          
+            setTimeout(()=>shake(basket2), 400);
+
+          break;
+        case 2:
+          gsap.to(".waste",
+            { left: parseInt(basket3.style.left, 10) + 40 + "px", top: parseInt(basket3.style.top, 10) + 40 + "px", duration: 1 });
+
+            setTimeout(()=>shake(basket3), 400);
+
+          break;
+        case 3:
+          gsap.to(".waste",
+            { left: parseInt(basket4.style.left, 10) + 40 + "px", top: parseInt(basket4.style.top, 10) + 40 + "px", duration: 1 });
+
+            setTimeout(()=>shake(basket4), 400);
+
+          break;
+        case 4:
+          gsap.to(".waste",
+            { left: parseInt(basket5.style.left, 10) + 40 + "px", top: parseInt(basket5.style.top, 10) + 40 + "px", duration: 1 });
+
+            setTimeout(()=>shake(basket5), 400);
+
+          break;
+
+      }
+
+    }
+    function onClickUpload() {//input 버튼 숨기고 재활용 올리기 버튼에 연결한 함수
+
+      let myInput = document.getElementById("invisible");
+      myInput.click();
+
+    }
+
+    function shake(element) {//gsap 진동 애니메이션
+            TweenMax.fromTo(element, 0.1, { x: -2 }, { x: 2, clearProps: "x", repeat: 5 })
+          }
+  </script>
+
+</body>
+
+
+</html>
