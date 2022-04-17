@@ -44,7 +44,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.3/gsap.min.js"></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/1.16.1/TweenMax.min.js'></script>
-  
+
 
 
 
@@ -115,6 +115,7 @@
 
       reader.addEventListener("load", function () {
         preview.src = reader.result;
+        
       }, false);
       reader.onload = () => {//업로드한 파일 미리보기하고 위치 업데이트하고 predict하기
         var waste = document.getElementById('waste');
@@ -138,7 +139,8 @@
       switch (maxVar) {//최댓값의 경우에 따라서
         case 0:
           gsap.to(".waste",//gsap 이동 애니메이션
-            { left: parseInt(basket1.style.left, 10) + 40 + "px", top: parseInt(basket1.style.top, 10) + 40 + "px", duration: 0.5 });
+            { left: parseInt(basket1.style.left, 10) + 40 + "px", 
+            top: parseInt(basket1.style.top, 10) + 40 + "px", duration: 0.5 });
 
           setTimeout(()=>shake(basket1), 400);
 
@@ -147,7 +149,7 @@
         case 1:
           gsap.to(".waste",
             { left: parseInt(basket2.style.left, 10) + 40 + "px", top: parseInt(basket2.style.top, 10) + 40 + "px", duration: 1 });
-          
+
             setTimeout(()=>shake(basket2), 400);
 
           break;
@@ -184,11 +186,11 @@
     }
 
     function shake(element) {//gsap 진동 애니메이션
-            TweenMax.fromTo(element, 0.1, { x: -2 }, { x: 2, clearProps: "x", repeat: 5 })
+            TweenMax.fromTo(element, 0.1, { x: -8 }, { x: 8, clearProps: "x", repeat: 5 })
           }
   </script>
 
 </body>
 
 
-</html>
+</html> 
